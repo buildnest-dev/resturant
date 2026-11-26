@@ -1,5 +1,6 @@
 'use client'
 
+import { Minus, Plus } from 'lucide-react'
 import { useStore, actions, fmt, tableBill, session } from '@/lib/store'
 import { Badge, Empty } from '@/components/common'
 import { DishPhoto } from '@/components/DishPhoto'
@@ -41,16 +42,25 @@ export function Billing() {
 // Chef: change stock only, never prices
 export function Stock() {
   const s = useStore()
+  const round = 'grid size-10 place-items-center rounded-full bg-brand-soft transition hover:bg-brand hover:text-white disabled:pointer-events-none disabled:opacity-40'
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <h1 className="text-2xl font-bold">Stock &amp; sold out</h1>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{s.menu.map((m) => (
-        <div key={m.id} className="card flex min-w-0 items-center gap-2 !p-3">
-          <DishPhoto id={m.id} emoji={m.emoji} className="size-12 text-2xl" />
-          <div className="min-w-0 flex-1"><b className="block truncate">{m.name}</b>{m.stock === 0 ? <span className="chip bg-red-100 text-red-700">Sold out</span> : <span className="text-sm text-stone-500">{m.stock} left</span>}</div>
-          <button className="btn btn-ghost" aria-label={'Less ' + m.name} disabled={!m.stock} onClick={() => actions.updateMenu(m.id, { stock: m.stock - 1 })}>−</button>
-          <button className="btn btn-ghost" aria-label={'More ' + m.name} onClick={() => actions.updateMenu(m.id, { stock: m.stock + 1 })}>+</button>
-          {m.stock > 0 && <button className="btn btn-red" onClick={() => actions.updateMenu(m.id, { stock: 0 })}>86</button>}
+        <div key={m.id} className="card flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <DishPhoto id={m.id} emoji={m.emoji} />
+            <div className="min-w-0">
+              <b className="block leading-snug">{m.name}</b>
+              <span className={'chip mt-1 ' + (m.stock === 0 ? 'bg-red-100 text-red-700' : m.stock <= 5 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-50 text-emerald-700')}>{m.stock === 0 ? 'Sold out' : `${m.stock} left`}</span>
+            </div>
+          </div>
+          <div className="mt-auto flex items-center gap-2">
+            <button className={round} aria-label={'Less ' + m.name} disabled={!m.stock} onClick={() => actions.updateMenu(m.id, { stock: m.stock - 1 })}><Minus className="size-4" /></button>
+            <span className="min-w-8 text-center tabular-nums">{m.stock}</span>
+            <button className={round} aria-label={'More ' + m.name} onClick={() => actions.updateMenu(m.id, { stock: m.stock + 1 })}><Plus className="size-4" /></button>
+            <button className="btn ml-auto whitespace-nowrap border border-red-200 !px-4 !py-2.5 text-red-700 hover:bg-red-600 hover:text-white" aria-label={'Mark ' + m.name + ' sold out'} disabled={!m.stock} onClick={() => actions.updateMenu(m.id, { stock: 0 })}>Sold out</button>
+          </div>
         </div>
       ))}</div>
     </div>
