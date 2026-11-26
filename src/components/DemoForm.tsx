@@ -29,7 +29,7 @@ export function DemoForm({ initialPlan }: { initialPlan: Plan }) {
   // the visitor's own date; empty until the page is interactive, so the form cannot submit before that
   const today = useSyncExternalStore(never, localToday, () => '')
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
+    <div className="mx-auto my-6 max-w-2xl rounded-[2rem] bg-paper p-3 sm:p-5">
         {done ? (
           <div className="card !rounded-2xl !p-8 text-center"><div className="text-5xl">✅</div><h1 className="mt-2 text-3xl font-semibold">Demo request recorded</h1><p className="mt-2 text-stone-600">Reference {done.id}. {done.business} · {done.plan} · {done.features.length} features.</p><p className="mt-2 text-sm text-amber-700">Preview mode: this request is saved only in this browser and is not yet sent to the ZAQSA team.</p><div className="mt-5 flex justify-center gap-2"><Link className="btn btn-ghost" href="/">Back to home</Link><Link className="btn btn-primary" href="/signin">Sign in preview</Link></div></div>
         ) : (

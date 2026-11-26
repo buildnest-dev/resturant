@@ -5,7 +5,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   const { plan } = await searchParams
   const initialPlan = plan === 'Yearly' ? 'Yearly' : 'Monthly'
   return (
-    <div>
+    <div className="app-theme min-h-screen bg-white">
       <Header />
       <DemoForm key={initialPlan} initialPlan={initialPlan} />
       <Footer />
