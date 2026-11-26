@@ -1,5 +1,5 @@
-import { Floor } from '@/screens/Floor'
+import { PointOfSale } from '@/screens/PointOfSale'
 
 export default function Page() {
-  return <Floor />
+  return <PointOfSale />
 }

@@ -165,6 +165,14 @@ export const actions = {
       d.orders.push({ id: 'O-' + (1000 + d.orders.length + 1 + Math.floor(Math.random() * 9)), table, source: tb?.type === 'room' ? 'room' : 'dine_in', status: 'received', items, note, allergyNote, createdAt: now(), closed: false })
     })
   },
+  // staff take the order at the table, so it goes straight to the kitchen
+  staffOrder(table: string, items: OrderItem[], note: string, allergyNote: string) {
+    set((d) => {
+      const tb = d.tables.find((t) => t.id === table)
+      d.orders.push({ id: 'S-' + uid(), table, source: tb?.type === 'room' ? 'room' : 'dine_in', status: 'accepted', items, note, allergyNote, createdAt: now(), closed: false })
+      takeStock(d, items)
+    })
+  },
   addPlatformOrder(o: PlatformOrder) {
     set((d) => { d.orders.push({ id: 'P-' + uid(), table: '-', status: 'accepted', closed: false, createdAt: now(), allergyNote: '', ...o }); takeStock(d, o.items) })
   },

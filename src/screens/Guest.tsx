@@ -6,6 +6,7 @@ import { createContext, useContext, useState, type ReactNode } from 'react'
 import { useStore, actions, fmt, tableBill, session, orderTotal, type Table } from '@/lib/store'
 import { useMounted } from '@/lib/use-mounted'
 import { Badge, Empty, Loading, Logo, Modal } from '@/components/common'
+import { DishPhoto } from '@/components/DishPhoto'
 import { AnimatedTicket } from '@/components/ui/ticket-confirmation-card'
 
 type Lang = 'en' | 'hi'
@@ -52,18 +53,13 @@ function GuestFrame({ table, children }: { table: string; children: ReactNode })
   const nav = [['', 'menu', '🍽️'], ['cart', 'cart', '🛒'], ['track', 'track', '⏱️'], ['chat', 'chat', '💬'], ['bill', 'bill', '🧾']] as const
   const to = (p: string) => `/t/${table}` + (p ? '/' + p : '')
   return (
-    <div className="app-theme min-h-screen bg-paper pb-24 text-ink md:pb-0 md:pl-60">
-      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r bg-white p-3 md:flex print:!hidden">
-        <Link href="/" className="px-2 py-1"><Logo /></Link>
-        <div className="my-3 rounded-xl bg-brand-soft p-3 text-sm"><b className="block">{s.restaurant.name}</b><span className="text-stone-500">Customer · {tb.label}</span></div>
-        <nav className="flex flex-col gap-1">{nav.map(([p, k, icon]) => (
-          <Link key={k} href={to(p)} aria-current={path === to(p) ? 'page' : undefined} className={'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium ' + (path === to(p) ? 'bg-brand text-white' : 'text-stone-600 hover:bg-brand-soft')}><span>{icon}</span>{T[lang][k]}{k === 'cart' && count > 0 && <span className="chip ml-auto bg-white text-brand">{count}</span>}</Link>
+    <div className="app-theme min-h-screen bg-paper pb-24 md:pb-0">
+      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b bg-white px-4 py-3 print:hidden">
+        <Link href="/signin" title="Switch role" className="rounded-full bg-brand-soft px-4 py-2"><Logo /></Link>
+        <div className="text-center text-xs md:ml-2 md:mr-auto md:text-left"><b className="block text-sm">{s.restaurant.name}</b>{tb.label}</div>
+        <nav className="mr-auto hidden gap-1.5 md:flex">{nav.map(([p, k, icon]) => (
+          <Link key={k} href={to(p)} aria-current={path === to(p) ? 'page' : undefined} className={'relative flex h-11 items-center gap-2 rounded-full px-4 text-sm ' + (path === to(p) ? 'bg-brand text-white' : 'bg-brand-soft hover:bg-brand/15')}><span>{icon}</span>{T[lang][k]}{k === 'cart' && count > 0 && <span className="chip bg-white text-brand">{count}</span>}</Link>
         ))}</nav>
-        <Link className="btn btn-ghost mt-auto" href="/signin">Switch role</Link>
-      </aside>
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-4 py-3">
-        <Link href="/signin" className="md:invisible"><Logo /></Link>
-        <div className="text-center text-xs"><b className="block text-sm">{s.restaurant.name}</b>{tb.label}</div>
         <button className="btn btn-ghost" onClick={() => setLang(lang === 'en' ? 'hi' : 'en')}>{lang === 'en' ? 'हिं' : 'EN'}</button>
       </header>
       <div className="mx-auto max-w-5xl p-4 md:p-6"><GuestContext.Provider value={{ table, tb, cart, change, clear, lang, t: T[lang], avoid, setAvoid, notify }}>{children}</GuestContext.Provider></div>
@@ -122,7 +118,7 @@ export function Menu() {
         const warn = m.allergens.filter((a) => avoid.includes(a)); const out = m.stock === 0
         return (
           <div key={m.id} className={'card flex gap-3 !p-3 ' + (out || warn.length ? 'opacity-60' : '')}>
-            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-brand-soft text-3xl">{m.emoji}</div>
+            <DishPhoto id={m.id} emoji={m.emoji} />
             <div className="min-w-0 flex-1">
               <div className="font-semibold"><span className={m.veg ? 'text-green-600' : 'text-red-600'}>● </span>{lang === 'hi' ? m.hi : m.name}</div>
               <div className="text-xs text-stone-500">⏱ ~{m.prep}–{m.prep + 5} min{!out && m.stock <= 5 && <b className="text-amber-600"> · only {m.stock} left</b>}</div>
@@ -161,7 +157,7 @@ export function Cart() {
     <div className="mx-auto max-w-2xl space-y-3">
       <h2 className="text-lg font-bold">Your cart</h2>
       {items.map((i) => <div key={i.id} className="card flex items-center justify-between !p-3"><div><b>{i.name}</b><div className="text-sm text-stone-500">{fmt(i.price)} · added by you</div></div><div className="flex items-center gap-2"><button className="btn btn-ghost" onClick={() => change(i.id, -1)}>−</button><b>{i.qty}</b><button className="btn btn-ghost" disabled={i.qty >= i.stock} onClick={() => change(i.id, 1)}>+</button></div></div>)}
-      {pairs.length > 0 && <div><h3 className="mb-1 text-sm font-bold text-brand">✨ Goes well with</h3><div className="flex gap-2 overflow-x-auto">{pairs.map((m) => <button key={m.id} className="card !p-2 text-left text-sm" onClick={() => change(m.id, 1)}><div className="text-2xl">{m.emoji}</div><div className="whitespace-nowrap">{m.name}</div><b>+ {fmt(m.price)}</b></button>)}</div></div>}
+      {pairs.length > 0 && <div><h3 className="mb-1 text-sm font-bold text-brand">✨ Goes well with</h3><div className="flex gap-2 overflow-x-auto">{pairs.map((m) => <button key={m.id} className="card !p-2 text-left text-sm" onClick={() => change(m.id, 1)}><DishPhoto id={m.id} emoji={m.emoji} className="mx-auto mb-1" /><div className="whitespace-nowrap">{m.name}</div><b>+ {fmt(m.price)}</b></button>)}</div></div>}
       <textarea className="input" placeholder="Note for kitchen" value={note} onChange={(e) => setNote(e.target.value)} />
       {avoid.length > 0 && <p className="text-sm font-semibold text-red-600">Kitchen will be warned: avoid {avoid.join(', ')}</p>}
       <div className="flex justify-between font-bold"><span>Subtotal</span><span>{fmt(sub)}</span></div>

@@ -2,6 +2,7 @@
 
 import { useStore, actions, fmt, tableBill, session } from '@/lib/store'
 import { Badge, Empty } from '@/components/common'
+import { DishPhoto } from '@/components/DishPhoto'
 import { GuestRequests } from './Admin'
 
 export function Requests() {
@@ -45,7 +46,7 @@ export function Stock() {
       <h1 className="text-2xl font-bold">Stock &amp; sold out</h1>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{s.menu.map((m) => (
         <div key={m.id} className="card flex min-w-0 items-center gap-2 !p-3">
-          <span className="text-2xl">{m.emoji}</span>
+          <DishPhoto id={m.id} emoji={m.emoji} className="size-12 text-2xl" />
           <div className="min-w-0 flex-1"><b className="block truncate">{m.name}</b>{m.stock === 0 ? <span className="chip bg-red-100 text-red-700">Sold out</span> : <span className="text-sm text-stone-500">{m.stock} left</span>}</div>
           <button className="btn btn-ghost" aria-label={'Less ' + m.name} disabled={!m.stock} onClick={() => actions.updateMenu(m.id, { stock: m.stock - 1 })}>−</button>
           <button className="btn btn-ghost" aria-label={'More ' + m.name} onClick={() => actions.updateMenu(m.id, { stock: m.stock + 1 })}>+</button>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useStore, actions, fmt, orderTotal, tableBill, session, type Order, type OrderItem, type OrderStatus, type Source } from '@/lib/store'
+import { DishPhoto } from '@/components/DishPhoto'
 import { Badge, Empty, statusColor, useTick, elapsed, isPlatform, orderWhere } from '@/components/common'
 
 function CheckoutList() {
@@ -126,7 +127,7 @@ export function MenuAdmin() {
           <thead><tr className="text-left text-stone-500"><th className="py-2">Dish</th><th>Hindi name</th><th>Category</th><th>Price ₹</th><th>Stock</th><th>Allergens</th><th>Visible</th></tr></thead>
           <tbody>{s.menu.map((m) => (
             <tr key={m.id} className="border-t">
-              <td className="py-2">{m.emoji} {m.name}</td>
+              <td className="py-2"><span className="flex items-center gap-2"><DishPhoto id={m.id} emoji={m.emoji} className="size-10 text-xl" />{m.name}</span></td>
               <td><input className="input" value={m.hi} onChange={(e) => actions.updateMenu(m.id, { hi: e.target.value })} /></td>
               <td>{m.cat}</td>
               <td><input className="input !w-24" type="number" min="1" value={m.price} onChange={(e) => actions.updateMenu(m.id, { price: +e.target.value })} /></td>

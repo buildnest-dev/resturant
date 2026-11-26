@@ -26,16 +26,19 @@
 
 /* the working screens (staff, manager, cashier, chef, customer) */
 .app-theme {
-  --color-brand: #159a91;
-  --color-brand-dark: #0f766e;
-  --color-brand-soft: #e6f6f4;
-  --color-paper: #f7f8f9;
+  --color-brand: #5e1416;
+  --color-brand-dark: #43090b;
+  --color-brand-soft: #f8eff2;
+  --color-paper: #f6f0f4;
+  --color-ink: #4a1416;
+  color: var(--color-ink);
+  font-family: 'Geist Mono Variable', ui-monospace, monospace;
 }
 
 @layer base { *, ::before, ::after { border-color: var(--color-stone-200); } }
 body { @apply bg-paper text-ink antialiased; }
 h1, h2 { font-family: var(--font-display); }
-.app-theme h1, .app-theme h2 { font-family: var(--font-sans); }
+.app-theme h1, .app-theme h2 { font-family: inherit; }
 @layer components {
   .btn { @apply inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed; }
   .btn-primary { @apply bg-brand text-white hover:bg-brand-dark; }
@@ -49,4 +52,11 @@ h1, h2 { font-family: var(--font-display); }
   .tab-on .count { @apply bg-brand text-white; }
   .input { @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20; }
   .chip { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+}
+@layer components {
+  .app-theme .btn { @apply rounded-full; }
+  .app-theme .card { @apply rounded-2xl border-transparent shadow-sm; }
+  .app-theme .input { @apply rounded-xl; }
+  .app-theme .tab { @apply rounded-full border-transparent; }
+  .app-theme .tab-on { @apply border-brand; }
 }
