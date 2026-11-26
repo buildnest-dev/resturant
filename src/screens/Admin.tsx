@@ -1,9 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
 import { useStore, actions, fmt, orderTotal, tableBill, session, type Order, type OrderItem, type OrderStatus, type Source } from '@/lib/store'
-import { Badge, Empty, useTick, elapsed, isPlatform, orderWhere } from '@/components/ui'
+import { Badge, Empty, statusColor, useTick, elapsed, isPlatform, orderWhere } from '@/components/common'
 
 function CheckoutList() {
   const s = useStore()
@@ -27,8 +26,11 @@ export function OrderCard({ o }: { o: Order }) {
   const act = (st: OrderStatus) => () => actions.setStatus(o.id, st)
   return (
     <div className="card">
-      <div className="flex justify-between"><b>{orderWhere(o)}</b><Badge s={o.status} /></div>
-      <div className="mb-2 text-xs text-stone-500">{o.id} · {elapsed(o.createdAt, t)} ago{o.customer && ' · ' + o.customer}</div>
+      <div className="mb-3 flex items-center gap-3">
+        <span className={'grid size-14 shrink-0 place-items-center rounded-lg text-sm font-semibold tabular-nums ' + (statusColor[o.status] || 'bg-stone-100')}>{elapsed(o.createdAt, t)}</span>
+        <div className="min-w-0 flex-1"><b className="block truncate">{orderWhere(o)}</b><span className="block truncate text-xs text-stone-500">{o.id}{o.customer && ' · ' + o.customer}</span></div>
+        <Badge s={o.status} />
+      </div>
       {o.items.map((i) => <div key={i.id} className="flex justify-between text-sm"><span>{i.qty} × {i.name}</span><span>{fmt(i.price * i.qty)}</span></div>)}
       {o.note && <p className="text-xs text-sky-700">Note: {o.note}</p>}
       {o.allergyNote && <p className="text-xs font-bold text-red-600">⚠ Allergy: {o.allergyNote}</p>}
@@ -76,9 +78,9 @@ export function Orders({ side = true }) {
   const match = (o: Order, x: Filter) => ({ All: true, New: o.status === 'received', Preparing: ['accepted', 'preparing'].includes(o.status), Ready: o.status === 'ready', Served: o.status === 'served', Unpaid: !isPlatform(o) && o.status !== 'declined' && session(s, o.table).status !== 'paid', Platform: isPlatform(o) })[x]
   const list = open.filter((o) => match(o, f)).reverse()
   return (
-    <div className={'grid gap-4 ' + (side ? 'lg:grid-cols-[1fr_300px]' : '')}>
-      <section>
-        <div className="mb-3 flex flex-wrap gap-2">{filters.map((x) => <button key={x} className={'btn ' + (f === x ? 'btn-primary' : 'btn-ghost')} onClick={() => setF(x)}>{x} ({open.filter((o) => match(o, x)).length})</button>)}</div>
+    <div className={'grid grid-cols-1 gap-4 ' + (side ? 'lg:grid-cols-[minmax(0,1fr)_300px]' : '')}>
+      <section className="min-w-0">
+        <div className="mb-4 flex gap-2 overflow-x-auto">{filters.map((x) => <button key={x} className={'tab ' + (f === x ? 'tab-on' : '')} onClick={() => setF(x)}>{x}<span className="count">{open.filter((o) => match(o, x)).length}</span></button>)}</div>
         {!list.length && <Empty>No orders here.</Empty>}
         <div className="grid gap-3 sm:grid-cols-2">{list.map((o) => <OrderCard key={o.id} o={o} />)}</div>
       </section>
@@ -86,21 +88,6 @@ export function Orders({ side = true }) {
         <CheckoutList />
         <GuestRequests />
       </aside>}
-    </div>
-  )
-}
-
-export function Floor({ link = true }) {
-  const s = useStore()
-  return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-      {s.tables.map((t) => {
-        const b = tableBill(s, t.id); const st = session(s, t.id).status
-        const [label, cls] = t.locked ? ['Locked', 'bg-stone-200'] : st !== 'open' ? [st.replace('_', ' '), 'bg-amber-100 border-amber-400'] : b.orders.length ? ['Occupied', 'bg-indigo-100 border-indigo-300'] : ['Free', 'bg-emerald-50 border-emerald-200']
-        const box = 'rounded-xl border p-4 text-center ' + cls
-        const body = <><div className="text-lg font-bold">{t.label}</div><div className="text-sm capitalize">{label}</div>{b.total > 0 && <div className="font-semibold">{fmt(b.total)}</div>}</>
-        return link ? <Link key={t.id} href={'/t/' + t.id} className={box}>{body}</Link> : <div key={t.id} className={box}>{body}</div>
-      })}
     </div>
   )
 }

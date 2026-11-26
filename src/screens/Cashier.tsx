@@ -1,7 +1,7 @@
 'use client'
 
 import { useStore, actions, fmt, tableBill, session } from '@/lib/store'
-import { Badge, Empty } from '@/components/ui'
+import { Badge, Empty } from '@/components/common'
 import { GuestRequests } from './Admin'
 
 export function Requests() {
@@ -28,7 +28,7 @@ export function Billing() {
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {['open', 'bill_requested'].includes(ss.status) && <button className="btn btn-primary flex-1" onClick={() => actions.approveCheckout(t.id)}>Approve checkout</button>}
-            {ss.status === 'bill_approved' && ['Cash', 'UPI'].map((m) => <button key={m} className="btn btn-green flex-1" onClick={() => confirm(`${m} payment received for ${t.label}?`) && actions.markPaid(t.id)}>{m} received</button>)}
+            {ss.status === 'bill_approved' && ['Cash', 'UPI'].map((m) => <button key={m} className="btn btn-green flex-1" onClick={() => confirm(`${m} payment received for ${t.label}?`) && actions.markPaid(t.id, m)}>{m} received</button>)}
             {ss.status === 'paid' && <button className="btn btn-green flex-1" onClick={() => actions.closeTable(t.id)}>Close table</button>}
           </div>
         </div>

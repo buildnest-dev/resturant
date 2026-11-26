@@ -5,7 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import { useStore, actions, fmt, tableBill, session, orderTotal, type Table } from '@/lib/store'
 import { useMounted } from '@/lib/use-mounted'
-import { Badge, Empty, Loading, Logo, Modal } from '@/components/ui'
+import { Badge, Empty, Loading, Logo, Modal } from '@/components/common'
+import { AnimatedTicket } from '@/components/ui/ticket-confirmation-card'
 
 type Lang = 'en' | 'hi'
 type Words = Record<'search' | 'add' | 'sold' | 'menu' | 'cart' | 'track' | 'chat' | 'bill', string>
@@ -45,18 +46,18 @@ function GuestFrame({ table, children }: { table: string; children: ReactNode })
   const notify = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2500) }
 
   if (!tb || tb.locked) return (
-    <div className="grid min-h-screen place-items-center p-6 text-center"><div><Logo /><h1 className="mt-4 text-xl font-bold">{tb ? 'This table is locked' : 'Invalid table link'}</h1><p className="text-stone-500">Please ask our staff for help.</p><Link className="btn btn-ghost mt-4" href="/signin">All pages</Link></div></div>
+    <div className="app-theme grid min-h-screen place-items-center p-6 text-center"><div><Logo /><h1 className="mt-4 text-xl font-bold">{tb ? 'This table is locked' : 'Invalid table link'}</h1><p className="text-stone-500">Please ask our staff for help.</p><Link className="btn btn-ghost mt-4" href="/signin">All pages</Link></div></div>
   )
   const count = Object.values(cart).reduce((a, b) => a + b, 0)
   const nav = [['', 'menu', '🍽️'], ['cart', 'cart', '🛒'], ['track', 'track', '⏱️'], ['chat', 'chat', '💬'], ['bill', 'bill', '🧾']] as const
   const to = (p: string) => `/t/${table}` + (p ? '/' + p : '')
   return (
-    <div className="min-h-screen bg-white pb-24 md:pb-0 md:pl-60">
+    <div className="app-theme min-h-screen bg-paper pb-24 text-ink md:pb-0 md:pl-60">
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r bg-white p-3 md:flex print:!hidden">
         <Link href="/" className="px-2 py-1"><Logo /></Link>
-        <div className="my-3 rounded-xl bg-indigo-50 p-3 text-sm"><b className="block">{s.restaurant.name}</b><span className="text-stone-500">Customer · {tb.label}</span></div>
+        <div className="my-3 rounded-xl bg-brand-soft p-3 text-sm"><b className="block">{s.restaurant.name}</b><span className="text-stone-500">Customer · {tb.label}</span></div>
         <nav className="flex flex-col gap-1">{nav.map(([p, k, icon]) => (
-          <Link key={k} href={to(p)} aria-current={path === to(p) ? 'page' : undefined} className={'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium ' + (path === to(p) ? 'bg-brand text-white' : 'text-stone-600 hover:bg-indigo-50')}><span>{icon}</span>{T[lang][k]}{k === 'cart' && count > 0 && <span className="chip ml-auto bg-white text-brand">{count}</span>}</Link>
+          <Link key={k} href={to(p)} aria-current={path === to(p) ? 'page' : undefined} className={'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium ' + (path === to(p) ? 'bg-brand text-white' : 'text-stone-600 hover:bg-brand-soft')}><span>{icon}</span>{T[lang][k]}{k === 'cart' && count > 0 && <span className="chip ml-auto bg-white text-brand">{count}</span>}</Link>
         ))}</nav>
         <Link className="btn btn-ghost mt-auto" href="/signin">Switch role</Link>
       </aside>
@@ -121,7 +122,7 @@ export function Menu() {
         const warn = m.allergens.filter((a) => avoid.includes(a)); const out = m.stock === 0
         return (
           <div key={m.id} className={'card flex gap-3 !p-3 ' + (out || warn.length ? 'opacity-60' : '')}>
-            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-indigo-50 text-3xl">{m.emoji}</div>
+            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-lg bg-brand-soft text-3xl">{m.emoji}</div>
             <div className="min-w-0 flex-1">
               <div className="font-semibold"><span className={m.veg ? 'text-green-600' : 'text-red-600'}>● </span>{lang === 'hi' ? m.hi : m.name}</div>
               <div className="text-xs text-stone-500">⏱ ~{m.prep}–{m.prep + 5} min{!out && m.stock <= 5 && <b className="text-amber-600"> · only {m.stock} left</b>}</div>
@@ -241,13 +242,25 @@ export function Bill() {
 }
 
 export function Thanks() {
-  const { table, notify } = useGuest(); const s = useStore()
+  const { table, tb, notify } = useGuest(); const s = useStore()
   const [rating, setRating] = useState(0); const [comment, setComment] = useState(''); const [sent, setSent] = useState(false)
   const [phone, setPhone] = useState(''); const [ok, setOk] = useState(false); const [joined, setJoined] = useState(false)
-  const points = Math.floor(tableBill(s, table).total / 10)
+  const bill = tableBill(s, table); const ss = session(s, table)
+  const points = Math.floor(bill.total / 10)
   return (
     <div className="mx-auto max-w-xl space-y-4 text-center">
-      <div className="text-5xl">🙏</div><h2 className="text-2xl font-black">Thank you!</h2>
+      {ss.status === 'paid' && ss.paidAt && bill.orders.length ? (
+        <AnimatedTicket
+          className="mx-auto"
+          message="Your payment is complete"
+          ticketId={bill.orders.map((o) => o.id).join(', ')}
+          amount={bill.total + ss.tip}
+          date={new Date(ss.paidAt)}
+          paymentTitle={`Paid by ${ss.method}`}
+          paymentDetail={`${s.restaurant.name} · ${tb.label}`}
+          barcodeValue={String(ss.paidAt)}
+        />
+      ) : <><div className="text-5xl">🙏</div><h2 className="text-2xl font-black">Thank you!</h2></>}
       <div className="card">
         <p className="font-bold">Rate your experience</p>
         <div className="text-3xl">{[1, 2, 3, 4, 5].map((n) => <button key={n} aria-label={n + ' stars'} onClick={() => { setRating(n); setSent(false) }} className={n <= rating ? 'text-amber-400' : 'text-stone-300'}>★</button>)}</div>

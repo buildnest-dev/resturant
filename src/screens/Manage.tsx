@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect, useState, type FormEvent } from 'react'
 import QRCode from 'qrcode'
 import { useStore, actions, fmt, orderTotal, type Order } from '@/lib/store'
-import { Empty, sourceName } from '@/components/ui'
+import { Empty, sourceName } from '@/components/common'
 
 export function Staff() {
   const s = useStore(); const [f, setF] = useState({ name: '', username: '', role: 'Waiter' }); const [err, setErr] = useState('')
@@ -24,7 +24,7 @@ export function Staff() {
       </form>
       <div className="grid gap-3 md:grid-cols-2">{s.staff.map((x) => (
         <div key={x.id} className="card">
-          <div className="flex items-center justify-between"><div><b>{x.name}</b> <span className="chip bg-indigo-100">{x.role}</span><div className="text-xs text-stone-500">@{x.username}</div></div>
+          <div className="flex items-center justify-between"><div><b>{x.name}</b> <span className="chip bg-brand-soft">{x.role}</span><div className="text-xs text-stone-500">@{x.username}</div></div>
             <button className={'btn ' + (x.enabled ? 'btn-green' : 'btn-ghost')} onClick={() => actions.updateStaff(x.id, { enabled: !x.enabled })}>{x.enabled ? 'Login on' : 'Login off'}</button></div>
           <div className="mt-3 space-y-1">{s.perms.map((p, i) => <label key={p} className="flex gap-2 text-sm"><input type="checkbox" checked={x.perms.includes(i)} onChange={() => actions.togglePerm(x.id, i)} />{p}</label>)}</div>
         </div>

@@ -1,24 +1,52 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 @theme {
   --color-brand: #4f46e5;
   --color-brand-dark: #3730a3;
+  --color-brand-soft: #eef2ff;
   --color-ink: #162640;
   --color-paper: #f6f8ff;
   --font-sans: 'Hanken Grotesk Variable', system-ui, sans-serif;
   --font-display: 'Fraunces Variable', Georgia, serif;
 }
 
+/* names used by shadcn components */
+@theme inline {
+  --color-background: var(--color-paper);
+  --color-foreground: var(--color-ink);
+  --color-card: #ffffff;
+  --color-card-foreground: var(--color-ink);
+  --color-muted: var(--color-stone-100);
+  --color-muted-foreground: var(--color-stone-500);
+  --color-border: var(--color-stone-200);
+  --color-primary: var(--color-brand);
+  --color-primary-foreground: #ffffff;
+}
+
+/* the working screens (staff, manager, cashier, chef, customer) */
+.app-theme {
+  --color-brand: #159a91;
+  --color-brand-dark: #0f766e;
+  --color-brand-soft: #e6f6f4;
+  --color-paper: #f7f8f9;
+}
+
 @layer base { *, ::before, ::after { border-color: var(--color-stone-200); } }
 body { @apply bg-paper text-ink antialiased; }
 h1, h2 { font-family: var(--font-display); }
+.app-theme h1, .app-theme h2 { font-family: var(--font-sans); }
 @layer components {
   .btn { @apply inline-flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold transition active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed; }
   .btn-primary { @apply bg-brand text-white hover:bg-brand-dark; }
   .btn-ghost { @apply border border-stone-300 bg-white text-stone-700 hover:bg-stone-100; }
   .btn-green { @apply bg-emerald-600 text-white hover:bg-emerald-700; }
   .btn-red { @apply bg-red-600 text-white hover:bg-red-700; }
-  .card { @apply rounded-xl border border-stone-200 bg-white p-4 shadow-sm; }
-  .input { @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-indigo-200; }
+  .card { @apply rounded-xl border border-stone-200 bg-white p-4; }
+  .tab { @apply inline-flex shrink-0 items-center gap-2 rounded-lg border border-stone-200 bg-white px-4 py-2 text-sm font-medium text-stone-600 transition hover:border-brand; }
+  .tab-on { @apply border-brand text-ink; }
+  .count { @apply grid h-6 min-w-6 place-items-center rounded-full bg-stone-100 px-1 text-xs font-semibold text-stone-600; }
+  .tab-on .count { @apply bg-brand text-white; }
+  .input { @apply w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20; }
   .chip { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold; }
 }

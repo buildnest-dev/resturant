@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
-import { Logo } from '@/components/ui'
+import { Logo } from '@/components/common'
 import { ROLES } from '@/lib/roles'
 
 export default function Page() {

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { PRODUCTS } from '@/lib/products'
-import { Logo } from './ui'
+import { Logo } from './common'
 
 const product = PRODUCTS.restaurant
 

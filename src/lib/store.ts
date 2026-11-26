@@ -12,7 +12,7 @@ export type PlatformOrder = Pick<Order, 'source' | 'items' | 'note' | 'customer'
 export type Table = { id: string; label: string; type: 'table' | 'room'; locked: boolean; tokenVersion: number }
 export type GuestRequest = { id: string; table: string; type: string; status: 'open' | 'done'; assignedTo: string; createdAt: number }
 export type Message = { id: string; table: string; from: 'guest' | 'staff'; text: string; at: number }
-export type Session = { status: SessionStatus; split: number; tip: number; paidShares: number }
+export type Session = { status: SessionStatus; split: number; tip: number; paidShares: number; paidAt?: number; method?: string }
 export type StaffMember = { id: string; name: string; username: string; role: string; enabled: boolean; perms: number[] }
 export type Customer = { id: string; name: string; phone: string; visits: number; points: number }
 export type FeedbackEntry = { id: string; table: string; rating: number; comment: string; at: number }
@@ -197,10 +197,10 @@ export const actions = {
   payShare(table: string) {
     set((d) => {
       const ss = session(d, table); const paidShares = ss.paidShares + 1
-      d.sessions[table] = { ...ss, paidShares, status: paidShares >= ss.split ? 'paid' : ss.status }
+      d.sessions[table] = paidShares >= ss.split ? { ...ss, paidShares, status: 'paid', method: 'UPI', paidAt: now() } : { ...ss, paidShares }
     })
   },
-  markPaid: (table: string) => set((d) => { const ss = session(d, table); d.sessions[table] = { ...ss, paidShares: ss.split, status: 'paid' } }),
+  markPaid: (table: string, method: string) => set((d) => { const ss = session(d, table); d.sessions[table] = { ...ss, paidShares: ss.split, status: 'paid', method, paidAt: now() } }),
   closeTable(table: string) {
     set((d) => { d.orders.filter((o) => o.table === table).forEach((o) => (o.closed = true)); delete d.sessions[table]; d.requests.filter((r) => r.table === table && r.type === 'Bill please').forEach((r) => (r.status = 'done')) })
   },
