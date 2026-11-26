@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { BellRing, Check, ConciergeBell, CookingPot, Lock, Minus, Plus, Printer, ReceiptText, Send, Timer, X, type LucideIcon } from 'lucide-react'
+import { BellRing, Check, CookingPot, Lock, Minus, Plus, Printer, ReceiptText, Send, Timer, X, type LucideIcon } from 'lucide-react'
 import { useStore, actions, fmt, tableBill, session, type MenuItem, type OrderStatus, type State, type Table } from '@/lib/store'
 import { Empty, useTick } from '@/components/common'
 import { DishPhoto } from '@/components/DishPhoto'
@@ -21,20 +21,20 @@ const Pill = ({ kind, icon: Icon, children }: { kind: keyof typeof tone; icon: L
   <span className={cn('chip gap-1', tone[kind])}><Icon className="size-3.5" />{children}</span>
 )
 
-function tableState(s: State, t: Table, now: number): { label: string; kind: keyof typeof tone; pill: LucideIcon; icon: LucideIcon } {
+function tableState(s: State, t: Table, now: number): { label: string; icon: LucideIcon } {
   const orders = tableBill(s, t.id).orders
   const status = session(s, t.id).status
-  if (t.locked) return { label: 'Locked', kind: 'grey', pill: Lock, icon: Lock }
-  if (status !== 'open') return { label: status === 'paid' ? 'Paid' : 'Billing', kind: 'amber', pill: ReceiptText, icon: ReceiptText }
-  if (!orders.length) return { label: 'Empty', kind: 'grey', pill: Timer, icon: Plus }
-  if (orders.some((o) => o.status === 'received')) return { label: 'New order', kind: 'amber', pill: BellRing, icon: BellRing }
+  if (t.locked) return { label: 'Locked', icon: Lock }
+  if (status !== 'open') return { label: status === 'paid' ? 'Paid' : 'Billing', icon: ReceiptText }
+  if (!orders.length) return { label: 'Empty', icon: Timer }
+  if (orders.some((o) => o.status === 'received')) return { label: 'New order', icon: BellRing }
   const cooking = orders.filter((o) => o.status === 'accepted' || o.status === 'preparing')
   if (cooking.length) {
     const mins = Math.max(0, Math.floor((now - Math.min(...cooking.map((o) => o.createdAt))) / 60000))
-    return { label: `${mins} mins`, kind: 'blue', pill: Timer, icon: CookingPot }
+    return { label: `${mins} mins`, icon: CookingPot }
   }
-  if (orders.some((o) => o.status === 'ready')) return { label: 'Ready', kind: 'green', pill: BellRing, icon: ConciergeBell }
-  return { label: 'Delivered', kind: 'green', pill: Check, icon: ConciergeBell }
+  if (orders.some((o) => o.status === 'ready')) return { label: 'Ready', icon: BellRing }
+  return { label: 'Delivered', icon: Check }
 }
 
 const dishState: Record<Exclude<OrderStatus, 'declined'>, { label: string; kind: keyof typeof tone; icon: LucideIcon }> = {
@@ -118,12 +118,18 @@ export function PointOfSale() {
           <div className="mb-3 flex items-center justify-between gap-2 px-1"><h2 className="text-xl">1. Table List</h2><span className="rounded-full bg-white px-4 py-2 text-sm">Total {s.tables.length}</span></div>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-2">{s.tables.map((t) => {
             const look = tableState(s, t, now)
+            const picked = t.id === table.id
+            const busy = look.label !== 'Empty' && look.label !== 'Locked'
+            const chairs = <span className="flex gap-3">{[0, 1].map((n) => <span key={n} className={cn('block h-3.5 w-6 rounded-md border-2 border-brand', busy && 'bg-brand')} />)}</span>
             return (
-              <button key={t.id} aria-pressed={t.id === table.id} aria-label={`${t.label}, ${look.label}`} onClick={() => { setSelected(t.id); setPane('menu'); setError('') }}
-                className={cn('flex h-40 flex-col items-center justify-between rounded-2xl border-2 bg-white p-2 transition hover:border-brand/40', t.id === table.id ? 'border-brand' : 'border-transparent')}>
-                <span className="self-end"><Pill kind={look.kind} icon={look.pill}>{look.label}</Pill></span>
-                <span className="grid size-12 place-items-center rounded-full bg-brand-soft"><look.icon className="size-5" /></span>
-                <span className="self-start text-sm">{t.label}</span>
+              <button key={t.id} aria-pressed={picked} aria-label={`${t.label}, ${look.label}`} onClick={() => { setSelected(t.id); setPane('menu'); setError('') }}
+                className="group flex min-w-0 flex-col items-center gap-1.5 py-2">
+                {chairs}
+                <span className={cn('flex h-24 w-full max-w-36 flex-col items-center justify-center gap-1 rounded-2xl border-2 border-brand transition', picked ? 'bg-brand text-white' : 'bg-white group-hover:bg-brand-soft')}>
+                  <b className="text-sm">{t.label}</b>
+                  <span className="flex items-center gap-1 text-xs"><look.icon className="size-3.5" />{look.label}</span>
+                </span>
+                {chairs}
               </button>
             )
           })}</div>
